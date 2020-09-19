@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Map as LeafletMap, TileLayer, GeoJSON } from 'react-leaflet';
 import styled from 'styled-components';
 
@@ -6,12 +6,12 @@ import cantons, { Canton } from './cantons';
 
 const colors = ['#ff0000', '#00ff00', '#0000ff', '#00e0ff', '#ffe600'];
 
-interface BackgroundMapProps  {
+interface BackgroundMapProps {
   onActiveCantonChange: (canton: Canton | undefined) => void;
   activeCanton: Canton | undefined;
 }
 
-const BackgroundMap: React.FC<BackgroundMapProps> = ({onActiveCantonChange, activeCanton}) => {
+const BackgroundMap: React.FC<BackgroundMapProps> = ({ onActiveCantonChange, activeCanton }) => {
   const position: [number, number] = [46.823, 8.1165];
   const coloredCantons = useMemo(() => ({
     ...cantons, features: cantons.features.map((canton, idx) => ({
@@ -25,6 +25,8 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({onActiveCantonChange, acti
     })),
   }), []);
 
+  const [clickedCanton, setClickedCanton] = useState<Canton | undefined>();
+
   return (
     <StyledLeafletMap center={position} zoom={8}>
       <TileLayer
@@ -32,18 +34,28 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({onActiveCantonChange, acti
         url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
       />
       <GeoJSON
+        key={clickedCanton}
         data={coloredCantons}
-        onmouseout={() => onActiveCantonChange(undefined)}
-        style={(entry) => ({
-          weight: 1,
-          // weight: entry?.id === activeCanton ? 3 : 1,
-          color: '#ddd',
-          // color: entry?.id === activeCanton ? '#f00' : '#bdbdbd',
-          fillColor: entry?.properties.fillColor,
-          fillOpacity: entry?.id === activeCanton ? 0.8 : 0.2,
-        })}
+        onmouseout={() => onActiveCantonChange(clickedCanton)}
+        style={(entry) => {
+          const isClickedOnly = (!activeCanton && entry?.id === clickedCanton);
+          return ({
+            weight: entry?.id === activeCanton && entry?.id === clickedCanton ? 4 : 1,
+            color: '#ddd',
+            fillColor: entry?.properties.fillColor,
+            fillOpacity: (entry?.id === activeCanton || isClickedOnly) ? (entry?.id === clickedCanton ? 0.55 : 0.85) : 0.2,
+          });
+        }}
         onEachFeature={(e, l) => {
           l.on('mouseover', () => {
+            onActiveCantonChange(e.id as Canton);
+          });
+          l.on('click', () => {
+            if (clickedCanton === e.id as Canton) {
+              setClickedCanton(undefined);
+            } else {
+              setClickedCanton(e.id as Canton);
+            }
             onActiveCantonChange(e.id as Canton);
           });
         }} />

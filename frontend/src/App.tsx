@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import './App.css';
 import 'antd/dist/antd.dark.css';
 import styled from 'styled-components';
-import { Redirect, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import { CalendarOutlined } from '@ant-design/icons';
 
 import BackgroundMap from './components/BackgroundMap';
@@ -13,6 +13,8 @@ import L from 'leaflet';
 import { Canton } from './components/cantons';
 import { Button, DatePicker, Modal, Slider } from 'antd';
 import moment from 'moment';
+import InfoBox from './components/InfoBox';
+import ColoringSwitch, { ColoringMode } from './components/ColoringSwitch';
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -22,9 +24,10 @@ L.Icon.Default.mergeOptions({
 });
 
 function App() {
-  const baseDate = moment('2020-03-13');
+  const baseDate = moment('2020-02-27');
   const diffDays = moment().diff(baseDate, 'days');
 
+  const [coloringMode, setColoringMode] = useState<ColoringMode>(ColoringMode.TOTAL_CASES);
   const [activeCanton, setActiveCanton] = useState<Canton | undefined>();
   const [sliderValue, setSliderValue] = useState(diffDays);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
@@ -36,33 +39,15 @@ function App() {
       <BackgroundMap activeCanton={activeCanton} onActiveCantonChange={setActiveCanton} />
       <Router>
         <Switch>
-          {/*<Route exact path="/route">*/}
-          {/*  <div*/}
-          {/*    style={{ position: 'relative', pointerEvents: 'auto', display: 'inline-block' }}*/}
-          {/*  >*/}
-          {/*    <RoutePlanning*/}
-          {/*      centerMap={centerMap}*/}
-          {/*      data={airports}*/}
-          {/*      onTrackChange={handleSetTrack}*/}
-          {/*    />*/}
-          {/*  </div>*/}
-          {/*</Route>*/}
           <Route exact path="/">
             <ModuleContainer>
               <div style={{ width: '100%' }}>
-                <InfoBoxContainer>
-                  {activeCanton ? <InfoBox>
-                      <div>Data at {displayedDate.format('DD-MM-YYYY')}:</div>
-                      <div>Canton: {activeCanton}</div>
-                      <div>Population: {Math.round(Math.random() * 100000)}</div>
-                      <div>Active cases: {Math.round(Math.random() * 1000)}</div>
-                      <div>Total cases: {Math.round(Math.random() * 5000)}</div>
-                      <div>Fatal cases: {Math.round(Math.random() * 500)}</div>
-                      <div>Corona scare score: {Math.round(Math.random() * 1000) / 100}</div>
-                      <div>Corona cases score: {Math.round(Math.random() * 1000) / 100}</div>
-                    </InfoBox> :
-                    <InfoBox>Hover Canton to see details</InfoBox>}
-                </InfoBoxContainer>
+                <InfoBox activeCanton={activeCanton} displayedDate={displayedDate} />
+              </div>
+            </ModuleContainer>
+            <ModuleContainer>
+              <div style={{pointerEvents: 'auto'}}>
+              <ColoringSwitch mode={coloringMode} setMode={setColoringMode}/>
               </div>
             </ModuleContainer>
             <ModuleContainer>
@@ -120,21 +105,6 @@ const ModuleContainer = styled.div`
   z-index: 1;
   pointer-events: none;
   padding: 10px;
-`;
-
-const InfoBoxContainer = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
-`;
-
-const InfoBox = styled.div`
-  background-color: #333;
-  border: 1px solid #666;
-  border-radius: 10px;
-  padding: 10px;
-  display: block;
-  font-size: 16px;
 `;
 
 const TimeSliderContainer = styled.div`
