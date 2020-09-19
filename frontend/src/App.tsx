@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
 import 'antd/dist/antd.dark.css';
@@ -15,6 +15,9 @@ import { Button, DatePicker, Modal, Slider } from 'antd';
 import moment from 'moment';
 import InfoBox from './components/InfoBox';
 import ColoringSwitch, { ColoringMode } from './components/ColoringSwitch';
+import ArticleList from './components/ArticleList';
+import { useQuery } from 'react-query';
+import { getInfections, InfectionApiResponse, InfectionData } from './services/service';
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -29,36 +32,63 @@ function App() {
 
   const [coloringMode, setColoringMode] = useState<ColoringMode>(ColoringMode.TOTAL_CASES);
   const [activeCanton, setActiveCanton] = useState<Canton | undefined>();
+  const [clickedCanton, setClickedCanton] = useState<Canton | undefined>();
   const [sliderValue, setSliderValue] = useState(diffDays);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [queryCache, setCache] = useState<InfectionData|undefined>();
 
   const displayedDate = moment(baseDate).add(sliderValue, 'days');
 
+  const { data } = useQuery(['infectionData', displayedDate], getInfections, );
+
+  useEffect(() => {
+    if (data) {
+      setCache(data);
+    }
+  }, [data, setCache])
+
+  const right = !!clickedCanton ? 400 : 0;
   return (
     <div className="App">
-      <BackgroundMap activeCanton={activeCanton} onActiveCantonChange={setActiveCanton} />
+      {right !== 0 && (
+        <ArticleListContainer right={right}>
+          <ArticleList close={() => setClickedCanton(undefined)} />
+        </ArticleListContainer>
+      )}
+      <BackgroundMap
+        activeCanton={activeCanton}
+        onActiveCantonChange={setActiveCanton}
+        rightSpace={right}
+        clickedCanton={clickedCanton}
+        setClickedCanton={setClickedCanton}
+        coloringMode={coloringMode}
+        infectionData={data || queryCache}
+      />
       <Router>
         <Switch>
           <Route exact path="/">
-            <ModuleContainer>
+            <ModuleContainer right={right}>
               <div style={{ width: '100%' }}>
-                <InfoBox activeCanton={activeCanton} displayedDate={displayedDate} />
+                <InfoBox activeCanton={activeCanton} displayedDate={displayedDate} data={data || queryCache} />
               </div>
             </ModuleContainer>
-            <ModuleContainer>
-              <div style={{pointerEvents: 'auto'}}>
-              <ColoringSwitch mode={coloringMode} setMode={setColoringMode}/>
+            <ModuleContainer right={right}>
+              <div style={{ pointerEvents: 'auto', textAlign: 'center' }}>
+                <ColoringSwitch mode={coloringMode} setMode={setColoringMode} />
               </div>
             </ModuleContainer>
-            <ModuleContainer>
+            <ModuleContainer right={right}>
               <TimeSliderContainer>
                 <CalendarButtonContainer>
                   <CalendarButton>
-                    <Button icon={<CalendarOutlined />} shape='circle-outline' size='large'
-                            onClick={() => setCalendarModalVisible(true)} />
+                    <Button
+                      icon={<CalendarOutlined />}
+                      shape="circle-outline"
+                      size="large"
+                      onClick={() => setCalendarModalVisible(true)}
+                    />
                   </CalendarButton>
                 </CalendarButtonContainer>
-
                 <SliderWrapper>
                   <SliderLegendContainer>
                     <div>{baseDate.format('DD-MM-YYYY')}</div>
@@ -68,22 +98,31 @@ function App() {
                     value={sliderValue}
                     max={diffDays}
                     onChange={(value: number) => setSliderValue(value)}
-                    tipFormatter={(value) => moment(baseDate).add(value, 'days').format('DD-MM-YYYY')}
+                    tipFormatter={(value) =>
+                      moment(baseDate).add(value, 'days').format('DD-MM-YYYY')
+                    }
                   />
                 </SliderWrapper>
                 <div style={{ flexGrow: 1 }} />
               </TimeSliderContainer>
-              <Modal visible={calendarModalVisible} onCancel={() => setCalendarModalVisible(false)}
-                     title='Select date of data to display'
-                     footer={[<Button type="primary" onClick={() => setCalendarModalVisible(false)}>
-                       OK
-                     </Button>]}>
-                <DatePicker value={displayedDate}
-                            inputReadOnly
-                            size='large'
-                            allowClear={false}
-                            onChange={value => value && setSliderValue(value.diff(baseDate, 'days'))}
-                            disabledDate={date => !date.isBetween(baseDate, moment(), undefined, '[]')} />
+              <Modal
+                visible={calendarModalVisible}
+                onCancel={() => setCalendarModalVisible(false)}
+                title="Select date of data to display"
+                footer={[
+                  <Button type="primary" onClick={() => setCalendarModalVisible(false)}>
+                    OK
+                  </Button>,
+                ]}
+              >
+                <DatePicker
+                  value={displayedDate}
+                  inputReadOnly
+                  size="large"
+                  allowClear={false}
+                  onChange={(value) => value && setSliderValue(value.diff(baseDate, 'days'))}
+                  disabledDate={(date) => !date.isBetween(baseDate, moment(), undefined, '[]')}
+                />
               </Modal>
             </ModuleContainer>
           </Route>
@@ -96,15 +135,25 @@ function App() {
   );
 }
 
-const ModuleContainer = styled.div`
+const ArticleListContainer = styled.div<{ right: number }>`
+  position: absolute;
+  background-color: #282828;
+  top: 0;
+  bottom: 0;
+  width: ${({ right }) => right}px;
+  right: 0;
+`;
+
+const ModuleContainer = styled.div<{ right: number }>`
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  right: 0;
+  right: ${({ right }) => right}px;
   z-index: 1;
   pointer-events: none;
   padding: 10px;
+  transition: right 0.4s;
 `;
 
 const TimeSliderContainer = styled.div`
@@ -117,18 +166,18 @@ const TimeSliderContainer = styled.div`
 `;
 
 const SliderWrapper = styled.div`
-  width: 80vw;
+  width: 80%;
 `;
 
 const SliderLegendContainer = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-  
+
   & > div:first-of-type {
     transform: translateX(-40%);
   }
-  
+
   & > div:last-of-type {
     transform: translateX(60%);
   }
@@ -140,12 +189,12 @@ const StyledSlider = styled(Slider)`
   & .ant-slider-track {
     opacity: 0;
   }
-  
+
   .ant-slider-handle {
     transform: translateX(-50%) scale(2) !important;
     border-color: #177ddc;
   }
-  
+
   .ant-slider-rail {
     background-color: #444;
   }
