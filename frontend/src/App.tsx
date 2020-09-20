@@ -5,6 +5,7 @@ import 'antd/dist/antd.dark.css';
 import styled from 'styled-components';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import { CalendarOutlined } from '@ant-design/icons';
+import isMobile from 'is-mobile';
 
 import BackgroundMap from './components/BackgroundMap';
 
@@ -17,7 +18,8 @@ import InfoBox from './components/InfoBox';
 import ColoringSwitch, { ColoringMode } from './components/ColoringSwitch';
 import ArticleList from './components/ArticleList';
 import { useQuery } from 'react-query';
-import { getInfections, InfectionApiResponse, InfectionData } from './services/service';
+import { getInfections, InfectionData } from './services/service';
+import InfoBoxMobile from './components/InfoBoxMobile';
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -28,35 +30,62 @@ L.Icon.Default.mergeOptions({
 
 function App() {
   const baseDate = moment('2020-02-27');
-  const diffDays = moment().diff(baseDate, 'days');
+  const diffDays = moment().add(-1, 'days').diff(baseDate, 'days');
 
   const [coloringMode, setColoringMode] = useState<ColoringMode>(ColoringMode.TOTAL_CASES);
   const [activeCanton, setActiveCanton] = useState<Canton | undefined>();
   const [clickedCanton, setClickedCanton] = useState<Canton | undefined>();
   const [sliderValue, setSliderValue] = useState(diffDays);
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
-  const [queryCache, setCache] = useState<InfectionData|undefined>();
+  const [queryCache, setCache] = useState<InfectionData | undefined>();
+  const [mobileArticleVisible, setMobileArticleVisible] = useState(false);
 
   const displayedDate = moment(baseDate).add(sliderValue, 'days');
 
-  const { data } = useQuery(['infectionData', displayedDate], getInfections, );
+  const { data } = useQuery(['infectionData', displayedDate], getInfections);
 
   useEffect(() => {
     if (data) {
       setCache(data);
     }
-  }, [data, setCache])
+  }, [data, setCache]);
 
-  const right = !!clickedCanton ? 400 : 0;
+  if (isMobile() && clickedCanton && mobileArticleVisible) {
+    return (
+      <ArticleList
+        close={() => setMobileArticleVisible(false)}
+        canton={clickedCanton}
+        date={displayedDate}
+      />
+    );
+  }
+
+  if (isMobile() && clickedCanton) {
+    return (
+      <InfoBoxMobile
+        activeCanton={activeCanton}
+        displayedDate={displayedDate}
+        data={data || queryCache}
+        close={() => setClickedCanton(undefined)}
+        openArticleList={() => setMobileArticleVisible(true)}
+      />
+    );
+  }
+
+  const right = !!clickedCanton && !isMobile() ? 400 : 0;
   return (
     <div className="App">
-      {right !== 0 && (
+      {right !== 0 && clickedCanton && (
         <ArticleListContainer right={right}>
-          <ArticleList close={() => setClickedCanton(undefined)} />
+          <ArticleList
+            close={() => setClickedCanton(undefined)}
+            canton={clickedCanton}
+            date={displayedDate}
+          />
         </ArticleListContainer>
       )}
       <BackgroundMap
-        activeCanton={activeCanton}
+        activeCanton={isMobile() ? undefined : activeCanton}
         onActiveCantonChange={setActiveCanton}
         rightSpace={right}
         clickedCanton={clickedCanton}
@@ -67,9 +96,15 @@ function App() {
       <Router>
         <Switch>
           <Route exact path="/">
-            <ModuleContainer right={right}>
+            <ModuleContainer right={right} zIndex={isMobile() ? 2 : 1}>
               <div style={{ width: '100%' }}>
-                <InfoBox activeCanton={activeCanton} displayedDate={displayedDate} data={data || queryCache} />
+                {!isMobile() && (
+                  <InfoBox
+                    activeCanton={activeCanton}
+                    displayedDate={displayedDate}
+                    data={data || queryCache}
+                  />
+                )}
               </div>
             </ModuleContainer>
             <ModuleContainer right={right}>
@@ -79,20 +114,23 @@ function App() {
             </ModuleContainer>
             <ModuleContainer right={right}>
               <TimeSliderContainer>
-                <CalendarButtonContainer>
-                  <CalendarButton>
-                    <Button
-                      icon={<CalendarOutlined />}
-                      shape="circle-outline"
-                      size="large"
-                      onClick={() => setCalendarModalVisible(true)}
-                    />
-                  </CalendarButton>
-                </CalendarButtonContainer>
+                {!isMobile() && (
+                  <CalendarButtonContainer>
+                    <CalendarButton>
+                      <Button
+                        icon={<CalendarOutlined />}
+                        shape="circle-outline"
+                        size="large"
+                        onClick={() => setCalendarModalVisible(true)}
+                      />
+                    </CalendarButton>
+                  </CalendarButtonContainer>
+                )}
+                {isMobile() && <div style={{ flexGrow: 1 }} />}
                 <SliderWrapper>
                   <SliderLegendContainer>
                     <div>{baseDate.format('DD-MM-YYYY')}</div>
-                    <div>{moment().format('DD-MM-YYYY')}</div>
+                    <div>{moment().add(-1, 'days').format('DD-MM-YYYY')}</div>
                   </SliderLegendContainer>
                   <StyledSlider
                     value={sliderValue}
@@ -121,7 +159,9 @@ function App() {
                   size="large"
                   allowClear={false}
                   onChange={(value) => value && setSliderValue(value.diff(baseDate, 'days'))}
-                  disabledDate={(date) => !date.isBetween(baseDate, moment(), undefined, '[]')}
+                  disabledDate={(date) =>
+                    !date.isBetween(baseDate, moment().add(-1, 'days'), undefined, '[]')
+                  }
                 />
               </Modal>
             </ModuleContainer>
@@ -144,13 +184,13 @@ const ArticleListContainer = styled.div<{ right: number }>`
   right: 0;
 `;
 
-const ModuleContainer = styled.div<{ right: number }>`
+const ModuleContainer = styled.div<{ right: number; zIndex?: number }>`
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: ${({ right }) => right}px;
-  z-index: 1;
+  z-index: ${({ zIndex = 1 }) => zIndex};
   pointer-events: none;
   padding: 10px;
   transition: right 0.4s;
@@ -179,13 +219,12 @@ const SliderLegendContainer = styled.div`
   }
 
   & > div:last-of-type {
-    transform: translateX(60%);
+    transform: translateX(40%);
   }
 `;
 
 const StyledSlider = styled(Slider)`
   pointer-events: auto;
-  width: 100%;
   & .ant-slider-track {
     opacity: 0;
   }

@@ -2,6 +2,8 @@ import axios from 'axios';
 import moment from 'moment';
 import { Canton, CantonInfo } from '../components/cantons';
 
+import { throttle } from 'lodash';
+
 export type InfectionApiResponse = {
   [key in Canton]: {
     confirmed_7delta: number;
@@ -31,7 +33,7 @@ export type InfectionData = {
   };
 };
 
-export const getInfections = async (key: string, date: string): Promise<InfectionData> => {
+const getInfectionsFunc = async (key: string, date: string): Promise<InfectionData> => {
   const { data } = await axios.get<InfectionApiResponse>('/api/coronacases', {
     params: { date: moment(date).format('YYYY-MM-DD') },
   });
@@ -46,3 +48,5 @@ export const getInfections = async (key: string, date: string): Promise<Infectio
     return { ...all, [key]: { ...data[typedKey], corona_score: isNaN(score) ? 0 : score * 3 } };
   }, {} as InfectionData);
 };
+
+export const getInfections = throttle(getInfectionsFunc, 100, { trailing: true });

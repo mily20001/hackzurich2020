@@ -3,6 +3,9 @@ import { Button, Card, Checkbox } from 'antd';
 import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
 import { Colors } from './colors';
+import isMobile from 'is-mobile';
+import { Canton } from './cantons';
+import { Moment } from 'moment';
 
 enum ArticleCategory {
   POSITIVE,
@@ -56,7 +59,7 @@ const articles: Article[] = [
   },
   {
     title: 'Rekord od początku epidemii',
-    author: 'Jan Kowalski',
+    author: '',
     category: ArticleCategory.TWITTER,
     preview:
       'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
@@ -88,23 +91,27 @@ const articles: Article[] = [
 
 interface ArticleListProps {
   close: () => void;
+  canton: Canton;
+  date: Moment;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({ close }) => {
+const ArticleList: React.FC<ArticleListProps> = ({ close, canton, date }) => {
   const [selectedTypes, setSelectedTypes] = useState<ArticleCategory[]>(
-    (Object.keys(ArticleCategory) as unknown) as ArticleCategory[],
+    (Object.keys(ArticleCategory) as unknown) as ArticleCategory[]
   );
 
   return (
     <Container>
       <div style={{ paddingBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 5 }}>
-          <h2>Articles <span style={{ fontWeight: 400 }}>(124)</span></h2>
-          <Button icon={<CloseOutlined />} onClick={close} />
+          <h2>
+            Articles <span style={{ fontWeight: 400 }}>(124)</span>
+          </h2>
+          <Button icon={<CloseOutlined />} onClick={close} size={isMobile() ? 'large' : 'middle'} />
         </div>
         <Checkbox.Group
           value={selectedTypes}
-          onChange={value => setSelectedTypes(value as ArticleCategory[])}
+          onChange={(value) => setSelectedTypes(value as ArticleCategory[])}
           options={Object.keys(categoryNames).map((category) => ({
             label: (
               <span style={{ color: categoryColors[(category as unknown) as ArticleCategory] }}>
@@ -116,8 +123,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ close }) => {
         />
       </div>
       {articles.map((article) => (
-        <Card
-          style={{ marginBottom: 15 }}
+        <StyledCard
           title={<TitleContainer>{article.title}</TitleContainer>}
           extra={
             <ExtraContainer>
@@ -129,11 +135,15 @@ const ArticleList: React.FC<ArticleListProps> = ({ close }) => {
           }
         >
           <p>{article.preview}</p>
-        </Card>
+        </StyledCard>
       ))}
     </Container>
   );
 };
+
+const StyledCard = styled(Card)`
+  margin-bottom: 15px;
+`;
 
 const ExtraContainer = styled.div`
   max-width: 75px;

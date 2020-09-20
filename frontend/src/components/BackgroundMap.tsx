@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { GeoJSON, Map as LeafletMap, TileLayer } from 'react-leaflet';
 import styled from 'styled-components';
-import color from 'color';
+import isMobile from 'is-mobile';
 
 import cantons, { Canton } from './cantons';
 import { InfectionData } from '../services/service';
@@ -46,7 +46,7 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({
   );
 
   return (
-    <StyledLeafletMap center={position} zoom={8} right={rightSpace}>
+    <StyledLeafletMap center={position} zoom={isMobile() ? 6 : 8} right={rightSpace}>
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"

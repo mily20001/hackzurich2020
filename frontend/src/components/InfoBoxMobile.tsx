@@ -2,8 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 import { Canton, CantonInfo } from './cantons';
 import { Moment } from 'moment';
-import { Card, Statistic } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Button, Card, Statistic } from 'antd';
+import {
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  CloseOutlined,
+  SolutionOutlined,
+} from '@ant-design/icons';
 import { Colors, getScoreColorString } from './colors';
 import { InfectionData } from '../services/service';
 
@@ -11,6 +16,8 @@ interface InfoBoxProps {
   activeCanton: Canton | undefined;
   displayedDate: Moment;
   data?: InfectionData;
+  close: () => void;
+  openArticleList: () => void;
 }
 
 const getSuffix = (value: number) => {
@@ -26,15 +33,15 @@ const getSuffix = (value: number) => {
   );
 };
 
-const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) => {
-  if (!activeCanton || !data) {
-    return (
-      <InfoBoxContainer>
-        <InfoBoxElement>
-          <div style={{ textAlign: 'center' }}>Hover Canton to see details</div>
-        </InfoBoxElement>
-      </InfoBoxContainer>
-    );
+const InfoBoxMobile: React.FC<InfoBoxProps> = ({
+  activeCanton,
+  displayedDate,
+  data,
+  close,
+  openArticleList,
+}) => {
+  if (!data || !activeCanton) {
+    return null;
   }
 
   const {
@@ -48,20 +55,33 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
 
   return (
     <InfoBoxContainer>
-      <InfoBoxElement className="full">
+      <InfoBoxElement>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            width: '100%',
+            paddingBottom: 10,
+          }}
+        >
+          <Button icon={<SolutionOutlined />} onClick={openArticleList} size="large">
+            Go to document list
+          </Button>
+          <Button icon={<CloseOutlined />} onClick={close} size="large" />
+        </div>
         <TitleBox>
           <CantonName>{CantonInfo[activeCanton].name}</CantonName>
           <div>Data at {displayedDate.format('DD-MM-YYYY')}:</div>
         </TitleBox>
-        <Card>
+        <StyledCard>
           <Statistic
             title="Population"
             value={CantonInfo[activeCanton].population}
             precision={0}
             valueStyle={{ color: Colors.LIGHT_GREY }}
           />
-        </Card>
-        <Card>
+        </StyledCard>
+        <StyledCard>
           <Statistic
             title="Total cases"
             value={confirmed_total}
@@ -69,8 +89,8 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
             valueStyle={{ color: Colors.RED }}
             suffix={getSuffix(confirmed_1delta)}
           />
-        </Card>
-        <Card>
+        </StyledCard>
+        <StyledCard>
           <Statistic
             title="Average daily new"
             value={confirmed_7delta / 7}
@@ -86,8 +106,8 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
               ) : undefined
             }
           />
-        </Card>
-        <Card>
+        </StyledCard>
+        <StyledCard>
           <Statistic
             title="Fatal cases"
             value={deceased_total}
@@ -95,27 +115,31 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
             valueStyle={{ color: Colors.RED }}
             suffix={getSuffix(deceased_1delta)}
           />
-        </Card>
-        <Card>
+        </StyledCard>
+        <StyledCard>
           <Statistic
             title="Corona scare score"
             value={1}
             precision={2}
             valueStyle={{ color: Colors.GREEN }}
           />
-        </Card>
-        <Card>
+        </StyledCard>
+        <StyledCard>
           <Statistic
             title="Corona cases score"
             value={corona_score}
             precision={2}
             valueStyle={{ color: getScoreColorString(corona_score) }}
           />
-        </Card>
+        </StyledCard>
       </InfoBoxElement>
     </InfoBoxContainer>
   );
 };
+
+const StyledCard = styled(Card)`
+  margin-bottom: 15px;
+`
 
 const TitleBox = styled.div`
   padding-bottom: 10px;
@@ -128,27 +152,26 @@ const CantonName = styled.div`
 `;
 
 const InfoBoxContainer = styled.div`
-  display: flex;
-  width: 100%;
-  justify-content: flex-end;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 `;
 
 const InfoBoxElement = styled.div`
   pointer-events: auto;
-  background-color: #282828;
+  background-color: #000;
   border: 1px solid #666;
   border-radius: 5px;
   padding: 10px;
   display: block;
   font-size: 16px;
-  width: 200px;
-  height: auto;
+  width: 100%;
+  height: 100%;
   transition: max-height 0.5s;
-  max-height: 75px;
-  overflow-y: hidden;
-  &.full {
-    max-height: 1500px;
-  }
+  overflow-y: auto;
 `;
 
-export default InfoBox;
+export default InfoBoxMobile;

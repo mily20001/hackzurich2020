@@ -4,3 +4,8 @@ export enum Colors {
   LIGHT_GREY = '#adadad',
   BLUE = '#007bff',
 }
+
+export const getScoreColorString = (score: number) => {
+  const clipped = Math.min(Math.max(0, score), 10);
+  return `hsl(${120 - clipped * 12}, 100%, 50%)`;
+}
