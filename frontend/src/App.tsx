@@ -78,7 +78,10 @@ function App() {
       {right !== 0 && clickedCanton && (
         <ArticleListContainer right={right}>
           <ArticleList
-            close={() => setClickedCanton(undefined)}
+            close={() => {
+              setClickedCanton(undefined);
+              setActiveCanton(undefined);
+            }}
             canton={clickedCanton}
             date={displayedDate}
           />
@@ -108,7 +111,7 @@ function App() {
               </div>
             </ModuleContainer>
             <ModuleContainer right={right}>
-              <div style={{ pointerEvents: 'auto', textAlign: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
                 <ColoringSwitch mode={coloringMode} setMode={setColoringMode} />
               </div>
             </ModuleContainer>

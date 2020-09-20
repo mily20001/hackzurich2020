@@ -63,7 +63,11 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({
             targetColor = '#f00';
             opacity = (infectionData ? infectionData[id].confirmed_total : 0) / 19000;
           } else if (coloringMode === ColoringMode.CASES_SCORE) {
-            const clippedValue = Math.min((infectionData?.[id].corona_score || 0), 10);
+            const clippedValue = Math.min(infectionData?.[id].corona_score || 0, 10);
+            targetColor = `hsl(${120 - clippedValue * 12}, 100%, 50%)`;
+            opacity = entry?.id === clickedCanton ? 0.8 : entry?.id === activeCanton ? 0.45 : 0.3;
+          } else if (coloringMode === ColoringMode.SCARE_SCORE) {
+            const clippedValue = Math.min(infectionData?.[id].scare_score || 0, 10);
             targetColor = `hsl(${120 - clippedValue * 12}, 100%, 50%)`;
             opacity = entry?.id === clickedCanton ? 0.8 : entry?.id === activeCanton ? 0.45 : 0.3;
           }

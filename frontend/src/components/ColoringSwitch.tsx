@@ -16,8 +16,8 @@ interface ColoringSwitchProps {
 const ColoringSwitch: React.FC<ColoringSwitchProps> = ({ setMode, mode }) => {
   if (isMobile()) {
     return (
-      <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-        <div style={{flexGrow: 1}}/>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ flexGrow: 1 }} />
         <Radio.Group
           options={
             Object.values(ColoringMode).map((mode) => ({ label: mode, value: mode })) as {
@@ -33,7 +33,7 @@ const ColoringSwitch: React.FC<ColoringSwitchProps> = ({ setMode, mode }) => {
           style={{
             display: 'flex',
             alignItems: 'stretch',
-            // width: '100%',
+            pointerEvents: 'auto',
             flexDirection: 'column',
           }}
         />
@@ -54,6 +54,9 @@ const ColoringSwitch: React.FC<ColoringSwitchProps> = ({ setMode, mode }) => {
       optionType="button"
       buttonStyle="solid"
       size="large"
+      style={{
+        pointerEvents: 'auto',
+      }}
     />
   );
 };

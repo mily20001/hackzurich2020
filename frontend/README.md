@@ -1,3 +1,41 @@
+## Corona scare map application
+
+This application shows "Coronavirus scare score" in Switzerland divided by cantons, based on sentiment of news that refers to Coronavirus and specified canton.
+For dates before middle of June there are also available tweets regarding Covid topic. In application you can select various dates to view data
+(note that for more recent dates there might be missing data). You can also quickly view articles and tweets that makes up the final score.
+Besides "Corona scare score" you can also view "Corona cases score", which is calculated based on population, changes and trends of new cases of covid.
+That indicator shows in which places virus is more active recently (or where it was active in the past).
+
+### Timeline
+On the bottom of the screen there is timeline, which allows to see past data. There is also calendar button, which allows easy selection of specific date.
+
+### Map modes
+- Total cases
+- Corona scare score
+- Corona cases score
+
+### Article list
+You can filter article list by type and sentiment, for Twitter posts you can see likes count and button to original post.
+For other articles you can see full text by clicking on article preview.
+
+## Gallery
+![screen1](./pictures/screen1.png)
+
+![screen2](./pictures/screen2.png)
+
+![screen3](./pictures/screen3.png)
+
+![screen4](./pictures/screen4.png)
+
+#### There is also mobile version available:
+![mobile1](./pictures/mobile1.png)
+
+![mobile2](./pictures/mobile2.png)
+
+***
+***
+***
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

@@ -44,6 +44,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
     deceased_1delta,
     deceased_total,
     corona_score,
+    scare_score
   } = data[activeCanton];
 
   return (
@@ -99,9 +100,9 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
         <Card>
           <Statistic
             title="Corona scare score"
-            value={1}
+            value={scare_score}
             precision={2}
-            valueStyle={{ color: Colors.GREEN }}
+            valueStyle={{ color: getScoreColorString(scare_score) }}
           />
         </Card>
         <Card>

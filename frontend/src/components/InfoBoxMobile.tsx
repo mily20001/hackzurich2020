@@ -51,6 +51,7 @@ const InfoBoxMobile: React.FC<InfoBoxProps> = ({
     deceased_1delta,
     deceased_total,
     corona_score,
+    scare_score,
   } = data[activeCanton];
 
   return (
@@ -119,9 +120,9 @@ const InfoBoxMobile: React.FC<InfoBoxProps> = ({
         <StyledCard>
           <Statistic
             title="Corona scare score"
-            value={1}
+            value={scare_score}
             precision={2}
-            valueStyle={{ color: Colors.GREEN }}
+            valueStyle={{ color: getScoreColorString(scare_score) }}
           />
         </StyledCard>
         <StyledCard>
@@ -139,7 +140,7 @@ const InfoBoxMobile: React.FC<InfoBoxProps> = ({
 
 const StyledCard = styled(Card)`
   margin-bottom: 15px;
-`
+`;
 
 const TitleBox = styled.div`
   padding-bottom: 10px;

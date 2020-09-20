@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { Button, Card, Checkbox } from 'antd';
 import styled from 'styled-components';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, LikeOutlined, TwitterOutlined } from '@ant-design/icons';
 import { Colors } from './colors';
 import isMobile from 'is-mobile';
 import { Canton } from './cantons';
 import { Moment } from 'moment';
+import { useQuery } from 'react-query';
+import { getTweets } from '../services/service';
+import ArticleView from './ArticleView';
 
-enum ArticleCategory {
-  POSITIVE,
-  NEUTRAL,
-  NEGATIVE,
-  TWITTER,
+export enum ArticleCategory {
+  POSITIVE = 'positive',
+  NEUTRAL = 'neutral',
+  NEGATIVE = 'negative',
+  TWITTER = 'twitter',
 }
 
 const categoryColors: { [key in ArticleCategory]: string } = {
@@ -28,66 +31,15 @@ const categoryNames: { [key in ArticleCategory]: string } = {
   [ArticleCategory.TWITTER]: 'Twitter',
 };
 
-interface Article {
+export interface Article {
   title: string;
   author: string;
   preview: string;
   category: ArticleCategory;
-  text: string;
+  likes?: number; // for tweets only
+  id: string;
+  titleMd5sum: string;
 }
-
-const articles: Article[] = [
-  {
-    title: 'Rekord od początku epidemii',
-    author: 'Jan Kowalski',
-    category: ArticleCategory.POSITIVE,
-    preview:
-      'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
-      'że mruczków nie trzeba wychowywać? Nic bardziej mylnego! Koty także potrzebują naszej opieki i miłości. ' +
-      'Wystrzegaj się tych błędów, a wychowasz zdrowego i szczęśliwego mruczka.',
-    text: 'xdxd',
-  },
-  {
-    title: 'Rekord od początku epidemii',
-    author: 'Jan Kowalski',
-    category: ArticleCategory.NEGATIVE,
-    preview:
-      'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
-      'że mruczków nie trzeba wychowywać? Nic bardziej mylnego! Koty także potrzebują naszej opieki i miłości. ' +
-      'Wystrzegaj się tych błędów, a wychowasz zdrowego i szczęśliwego mruczka.',
-    text: 'xdxd',
-  },
-  {
-    title: 'Rekord od początku epidemii',
-    author: '',
-    category: ArticleCategory.TWITTER,
-    preview:
-      'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
-      'że mruczków nie trzeba wychowywać? Nic bardziej mylnego! Koty także potrzebują naszej opieki i miłości. ' +
-      'Wystrzegaj się tych błędów, a wychowasz zdrowego i szczęśliwego mruczka.',
-    text: 'xdxd',
-  },
-  {
-    title: 'Rekord od początku epidemii',
-    author: 'Jan Kowalski',
-    category: ArticleCategory.NEUTRAL,
-    preview:
-      'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
-      'że mruczków nie trzeba wychowywać? Nic bardziej mylnego! Koty także potrzebują naszej opieki i miłości. ' +
-      'Wystrzegaj się tych błędów, a wychowasz zdrowego i szczęśliwego mruczka.',
-    text: 'xdxd',
-  },
-  {
-    title: 'Rekord od początku epidemii',
-    author: 'Jan Kowalski',
-    category: ArticleCategory.NEGATIVE,
-    preview:
-      'Mówi się, że koty chodzą własnymi drogami i nie wymagają tak dużej atencji jak psy. Ale czy to oznacza, ' +
-      'że mruczków nie trzeba wychowywać? Nic bardziej mylnego! Koty także potrzebują naszej opieki i miłości. ' +
-      'Wystrzegaj się tych błędów, a wychowasz zdrowego i szczęśliwego mruczka.',
-    text: 'xdxd',
-  },
-];
 
 interface ArticleListProps {
   close: () => void;
@@ -97,15 +49,28 @@ interface ArticleListProps {
 
 const ArticleList: React.FC<ArticleListProps> = ({ close, canton, date }) => {
   const [selectedTypes, setSelectedTypes] = useState<ArticleCategory[]>(
-    (Object.keys(ArticleCategory) as unknown) as ArticleCategory[]
+    (Object.values(ArticleCategory) as unknown) as ArticleCategory[]
   );
+
+  const { data: documents, isLoading } = useQuery(['tweets', { canton, date }], getTweets);
+
+  const filteredDocuments = documents?.filter(({ category }) => selectedTypes.includes(category));
+  const [modalOpenIdTitle, setModalOpenIdTitle] = useState<
+    { id: string; title: string } | undefined
+  >();
 
   return (
     <Container>
+      <ArticleView
+        visible={!!modalOpenIdTitle}
+        onClose={() => setModalOpenIdTitle(undefined)}
+        title={modalOpenIdTitle?.title || ''}
+        id={modalOpenIdTitle?.id || ''}
+      />
       <div style={{ paddingBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 5 }}>
           <h2>
-            Articles <span style={{ fontWeight: 400 }}>(124)</span>
+            Articles <span style={{ fontWeight: 400 }}>({filteredDocuments?.length || 0})</span>
           </h2>
           <Button icon={<CloseOutlined />} onClick={close} size={isMobile() ? 'large' : 'middle'} />
         </div>
@@ -122,31 +87,68 @@ const ArticleList: React.FC<ArticleListProps> = ({ close, canton, date }) => {
           }))}
         />
       </div>
-      {articles.map((article) => (
-        <StyledCard
-          title={<TitleContainer>{article.title}</TitleContainer>}
-          extra={
-            <ExtraContainer>
-              <div style={{ color: categoryColors[article.category] }}>
-                {categoryNames[article.category]}
-              </div>
-              <small>{article.author}</small>
-            </ExtraContainer>
-          }
-        >
-          <p>{article.preview}</p>
-        </StyledCard>
-      ))}
+      {!filteredDocuments || isLoading
+        ? [...Array(5)].map((_, i) => <StyledCard loading key={`loading${i}`} />)
+        : filteredDocuments.map((article) => (
+            <StyledCard
+              clickable={article.category !== ArticleCategory.TWITTER && !isMobile()}
+              onClick={
+                article.category !== ArticleCategory.TWITTER && !isMobile()
+                  ? () => setModalOpenIdTitle({ id: article.id, title: article.title })
+                  : undefined
+              }
+              title={
+                <TitleContainer>
+                  {article.title +
+                    ' ' +
+                    (article.category !== ArticleCategory.TWITTER && !isMobile() ? 'c' : 'nc')}
+                </TitleContainer>
+              }
+              extra={
+                <ExtraContainer>
+                  <div style={{ color: categoryColors[article.category] }}>
+                    {categoryNames[article.category]}
+                  </div>
+                  <small>{article.author}</small>
+                </ExtraContainer>
+              }
+              actions={
+                article.category === ArticleCategory.TWITTER
+                  ? [
+                      <span>
+                        <span style={{ paddingRight: 5 }}>{article.likes || 0}</span>
+                        <LikeOutlined />
+                      </span>,
+                      <a href={`https://twitter.com/i/web/status/${article.id}`}>
+                        <TwitterOutlined />
+                      </a>,
+                    ]
+                  : undefined
+              }
+            >
+              <p>{article.preview}</p>
+            </StyledCard>
+          ))}
+      {!isLoading &&
+        filteredDocuments?.length === 0 &&
+        'No articles has been found for selected date and canton :('}
     </Container>
   );
 };
 
-const StyledCard = styled(Card)`
+const StyledCard = styled(Card)<{ clickable?: boolean }>`
   margin-bottom: 15px;
+
+  ${({ clickable }) => (!clickable ? '' : 'cursor: pointer;')}
+  &:hover {
+    ${({ clickable }) => (!clickable ? '' : 'background-color: #0a0a0a;')}
+  }
 `;
 
 const ExtraContainer = styled.div`
-  max-width: 75px;
+  width: 90px;
+  max-width: 90px;
+  margin-left: 10px;
 `;
 
 const TitleContainer = styled.div`
