@@ -97,13 +97,7 @@ const ArticleList: React.FC<ArticleListProps> = ({ close, canton, date }) => {
                   ? () => setModalOpenIdTitle({ id: article.id, title: article.title })
                   : undefined
               }
-              title={
-                <TitleContainer>
-                  {article.title +
-                    ' ' +
-                    (article.category !== ArticleCategory.TWITTER && !isMobile() ? 'c' : 'nc')}
-                </TitleContainer>
-              }
+              title={<TitleContainer>{article.title}</TitleContainer>}
               extra={
                 <ExtraContainer>
                   <div style={{ color: categoryColors[article.category] }}>

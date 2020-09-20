@@ -48,9 +48,9 @@ const getInfectionsFunc = async (key: string, dateString: string): Promise<Infec
 
     const scare_score =
       (Math.max(0, -entry.score) / CantonInfo[typedKey].population) *
-      200000 *
+      130000 *
       (date.isBefore('2020-06-10')
-        ? 0.7 + ((0.3 * entry.tweets) / CantonInfo[typedKey].population) * 200000
+        ? 0.5 + ((0.5 * entry.tweets) / CantonInfo[typedKey].population) * 200000
         : 1);
     return {
       ...all,

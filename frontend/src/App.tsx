@@ -32,10 +32,10 @@ function App() {
   const baseDate = moment('2020-02-27');
   const diffDays = moment().add(-1, 'days').diff(baseDate, 'days');
 
-  const [coloringMode, setColoringMode] = useState<ColoringMode>(ColoringMode.TOTAL_CASES);
+  const [coloringMode, setColoringMode] = useState<ColoringMode>(ColoringMode.SCARE_SCORE);
   const [activeCanton, setActiveCanton] = useState<Canton | undefined>();
   const [clickedCanton, setClickedCanton] = useState<Canton | undefined>();
-  const [sliderValue, setSliderValue] = useState(diffDays);
+  const [sliderValue, setSliderValue] = useState(moment('2020-06-01').diff(baseDate, 'days'));
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [queryCache, setCache] = useState<InfectionData | undefined>();
   const [mobileArticleVisible, setMobileArticleVisible] = useState(false);

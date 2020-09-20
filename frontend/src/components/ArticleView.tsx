@@ -11,7 +11,7 @@ interface DocumentViewProps {
 }
 
 const ArticleView: React.FC<DocumentViewProps> = ({ id, title, onClose, visible }) => {
-  const { data, isLoading } = useQuery(visible && ['document', id], getArticle);
+  const { data, isLoading } = useQuery(visible && id && ['document', id], getArticle);
 
   return (
     <Modal title={title} onCancel={onClose} visible={visible} footer={null} centered closable width={1200}>

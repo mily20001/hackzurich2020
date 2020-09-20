@@ -4,8 +4,8 @@ import isMobile from 'is-mobile';
 
 export enum ColoringMode {
   TOTAL_CASES = 'Total cases',
-  SCARE_SCORE = 'Covid scare score',
-  CASES_SCORE = 'Covid cases score',
+  SCARE_SCORE = 'Corona scare score',
+  CASES_SCORE = 'Corona cases score',
 }
 
 interface ColoringSwitchProps {
