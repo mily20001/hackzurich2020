@@ -3,8 +3,9 @@ import { GeoJSON, Map as LeafletMap, TileLayer } from 'react-leaflet';
 import styled from 'styled-components';
 import isMobile from 'is-mobile';
 
+import { InfectionData } from '../service';
+
 import cantons, { Canton } from './cantons';
-import { InfectionData } from '../services/service';
 import { ColoringMode } from './ColoringSwitch';
 
 const colors = ['#ff0000', '#00ff00', '#0000ff', '#00e0ff', '#ffe600'];
@@ -77,7 +78,6 @@ const BackgroundMap: React.FC<BackgroundMapProps> = ({
             color: '#ddd',
             fillColor: targetColor,
             fillOpacity: opacity,
-            // fillOpacity: entry?.id === clickedCanton ? 0.85 : entry?.id === activeCanton ? 0.45 : 0.2,
           };
         }}
         onEachFeature={(e, l) => {

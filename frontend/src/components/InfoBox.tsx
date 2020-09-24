@@ -1,11 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Canton, CantonInfo } from './cantons';
 import { Moment } from 'moment';
 import { Card, Statistic } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+
+import { InfectionData } from '../service';
+
+import { Canton, CantonInfo } from './cantons';
 import { Colors, getScoreColorString } from './colors';
-import { InfectionData } from '../services/service';
 
 interface InfoBoxProps {
   activeCanton: Canton | undefined;
@@ -44,7 +46,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ activeCanton, displayedDate, data }) 
     deceased_1delta,
     deceased_total,
     corona_score,
-    scare_score
+    scare_score,
   } = data[activeCanton];
 
   return (

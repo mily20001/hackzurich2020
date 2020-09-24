@@ -2,8 +2,9 @@ import axios from 'axios';
 import moment from 'moment';
 import { throttle } from 'lodash';
 import md5 from 'md5';
-import { Canton, CantonInfo } from '../components/cantons';
-import { Article, ArticleCategory } from '../components/ArticleList';
+
+import { Canton, CantonInfo } from './components/cantons';
+import { Article, ArticleCategory } from './components/ArticleList';
 
 interface CantonApiData {
   confirmed_7delta: number;

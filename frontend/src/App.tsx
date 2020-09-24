@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import 'leaflet/dist/leaflet.css';
-import './App.css';
-import 'antd/dist/antd.dark.css';
 import styled from 'styled-components';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
+import { Button, DatePicker, Modal, Slider } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
 import isMobile from 'is-mobile';
+import { useQuery } from 'react-query';
+import L from 'leaflet';
+import moment from 'moment';
+import 'leaflet/dist/leaflet.css';
+import 'antd/dist/antd.dark.css';
 
 import BackgroundMap from './components/BackgroundMap';
-
-// https://github.com/PaulLeCam/react-leaflet/issues/255
-import L from 'leaflet';
 import { Canton } from './components/cantons';
-import { Button, DatePicker, Modal, Slider } from 'antd';
-import moment from 'moment';
 import InfoBox from './components/InfoBox';
 import ColoringSwitch, { ColoringMode } from './components/ColoringSwitch';
 import ArticleList from './components/ArticleList';
-import { useQuery } from 'react-query';
-import { getInfections, InfectionData } from './services/service';
+import { getInfections, InfectionData } from './service';
 import InfoBoxMobile from './components/InfoBoxMobile';
+import './App.css';
+
+// https://github.com/PaulLeCam/react-leaflet/issues/255
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({

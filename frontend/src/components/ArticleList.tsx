@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Button, Card, Checkbox } from 'antd';
-import styled from 'styled-components';
 import { CloseOutlined, LikeOutlined, TwitterOutlined } from '@ant-design/icons';
-import { Colors } from './colors';
+import styled from 'styled-components';
 import isMobile from 'is-mobile';
-import { Canton } from './cantons';
 import { Moment } from 'moment';
 import { useQuery } from 'react-query';
-import { getTweets } from '../services/service';
+
+import { getTweets } from '../service';
+
+import { Colors } from './colors';
+import { Canton } from './cantons';
 import ArticleView from './ArticleView';
 
 export enum ArticleCategory {
